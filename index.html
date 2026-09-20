@@ -8,6 +8,7 @@
 <meta property="og:title" content="Syed Zeeshan Ali">
 <meta property="og:description" content="GenAI automation, data engineering, and enterprise IT work">
 <meta name="color-scheme" content="light dark">
+<script>try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);}}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
@@ -15,13 +16,15 @@
 :root {
   --bg: #F5F6F8;
   --ink: #13161C;
-  --muted: #586172;
+  --muted: #3A414D;
   --line: #DCE0E7;
   --accent: #2B45D4;
   --mark-bg: #FFE58A;
   --mark-ink: #13161C;
   --tag-bg: #3A3F47;
   --tag-ink: #FFFFFF;
+  --poster-shadow: 0 1px 2px rgba(19, 22, 28, .08), 0 8px 24px rgba(19, 22, 28, .12);
+  --portrait-shadow: 0 0 0 1px rgba(19, 22, 28, .12), 0 6px 20px rgba(19, 22, 28, .16);
   --display: 'Lato', Calibri, Carlito, 'Segoe UI', system-ui, -apple-system, sans-serif;
   --body: 'Lato', Calibri, Carlito, 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
@@ -31,7 +34,7 @@
     --ink: #EBEDF2;
     --muted: #9BA4B4;
     --line: #242833;
-    --accent: #8CA0FF; --mark-bg: #D9B43A; --mark-ink: #13161C; --tag-bg: #4A505C; --tag-ink: #F5F6F8;
+    --accent: #8CA0FF; --mark-bg: #D9B43A; --mark-ink: #13161C; --tag-bg: #4A505C; --tag-ink: #F5F6F8; --poster-shadow: none; --portrait-shadow: none;
   }
 }
 :root[data-theme="dark"] {
@@ -39,10 +42,12 @@
   --ink: #EBEDF2;
   --muted: #9BA4B4;
   --line: #242833;
-  --accent: #8CA0FF; --mark-bg: #D9B43A; --mark-ink: #13161C; --tag-bg: #4A505C; --tag-ink: #F5F6F8;
+  --accent: #8CA0FF; --mark-bg: #D9B43A; --mark-ink: #13161C; --tag-bg: #4A505C; --tag-ink: #F5F6F8; --poster-shadow: none; --portrait-shadow: none;
 }
 
 *, *::before, *::after { box-sizing: inherit; }
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
 :root {
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
@@ -95,7 +100,10 @@ a { color: inherit; }
   backdrop-filter: saturate(1.4) blur(10px);
   border-bottom: 1px solid var(--line);
 }
+.bar .wrap { display: flex; align-items: center; gap: 1rem; }
 .bar nav {
+  flex: 1;
+  min-width: 0;
   display: flex;
   gap: 1.75rem;
   overflow-x: auto;
@@ -115,6 +123,24 @@ a { color: inherit; }
 }
 .bar a:hover { color: var(--ink); }
 .bar a[aria-current="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.theme {
+  display: inline-flex;
+  flex: none;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.theme button {
+  padding: .28rem .8rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: 600 .85rem/1.2 var(--display);
+  cursor: pointer;
+}
+.theme button:hover { color: var(--ink); }
+.theme button[aria-pressed="true"] { background: var(--tag-bg); color: var(--tag-ink); }
 
 /* Hero */
 .hero {
@@ -170,6 +196,7 @@ a { color: inherit; }
   object-fit: cover;
   object-position: 50% 30%;
   background: var(--line);
+  box-shadow: var(--portrait-shadow);
 }
 @media (min-width: 1200px) {
   .portrait { margin-right: clamp(2rem, 5vw, 6rem); }
@@ -273,6 +300,7 @@ a { color: inherit; }
   background: #fff;
   cursor: zoom-in;
   line-height: 0;
+  box-shadow: var(--poster-shadow);
 }
 .poster:hover { border-color: var(--accent); }
 .poster img { display: block; width: 100%; height: auto; }
@@ -390,6 +418,10 @@ a { color: inherit; }
       <a href="#skills">Skills</a>
       <a href="#contact">Contact</a>
     </nav>
+    <div class="theme" role="group" aria-label="Color theme">
+      <button type="button" data-mode="light" aria-pressed="false">Light</button>
+      <button type="button" data-mode="dark" aria-pressed="false">Dark</button>
+    </div>
   </div>
 </header>
 
@@ -620,6 +652,29 @@ a { color: inherit; }
 </dialog>
 
 <script>
+(function () {
+  var root = document.documentElement;
+  var btns = [].slice.call(document.querySelectorAll('.theme button'));
+  var mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  function current() {
+    return root.getAttribute('data-theme') || (mq && mq.matches ? 'dark' : 'light');
+  }
+  function reflect() {
+    var c = current();
+    btns.forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-mode') === c ? 'true' : 'false'); });
+  }
+  btns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var m = b.getAttribute('data-mode');
+      root.setAttribute('data-theme', m);
+      try { localStorage.setItem('theme', m); } catch (e) {}
+      reflect();
+    });
+  });
+  if (mq && mq.addEventListener) mq.addEventListener('change', reflect);
+  reflect();
+})();
+
 (function () {
   var dlg = document.getElementById('lightbox');
   if (!dlg || typeof dlg.showModal !== 'function') return;
